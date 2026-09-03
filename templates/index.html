@@ -8,7 +8,7 @@
     <title>إضافة هوامش PDF</title>
 
     <!-- <script src="https://cdn.socket.io/4.8.3/socket.io.min.js"></script> -->
-
+    <link rel="manifest" href="../static/manifest.json">
     <style>
         body {
             font-family: Tahoma, sans-serif;
@@ -180,6 +180,13 @@ document.getElementById("uploadForm").addEventListener("submit", async (e) => {
         "✅ تم إنشاء الملف";
 });
 </script>
-
+<script>
+if ("serviceWorker" in navigator) {
+    navigator.serviceWorker.register("/static/sw.js")
+        .then(() => {
+            console.log("PWA Ready");
+        });
+}
+</script>
 </body>
 </html>
