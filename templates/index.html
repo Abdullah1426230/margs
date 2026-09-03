@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <title>إضافة هوامش PDF</title>
+
+    <!-- <script src="https://cdn.socket.io/4.8.3/socket.io.min.js"></script> -->
+
+    <style>
+        body {
+            font-family: Tahoma, sans-serif;
+            background: #f5f7fa;
+            padding: 40px;
+        }
+
+        .container {
+            max-width: 700px;
+            margin: auto;
+            background: white;
+            padding: 25px;
+            border-radius: 15px;
+            box-shadow: 0 0 15px rgba(0, 0, 0, .1);
+        }
+
+        h1 {
+            text-align: center;
+            color: #2563eb;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        input {
+            width: 100%;
+            padding: 12px;
+            box-sizing: border-box;
+        }
+
+        button {
+            width: 100%;
+            padding: 15px;
+            margin-top: 20px;
+            border: none;
+            border-radius: 10px;
+            background: #2563eb;
+            color: white;
+            cursor: pointer;
+            font-size: 16px;
+        }
+
+        button:hover {
+            background: #1d4ed8;
+        }
+
+        #progress-container {
+            display: none;
+            margin-top: 20px;
+        }
+
+        #progress-bg {
+            background: #ddd;
+            height: 30px;
+            border-radius: 20px;
+            overflow: hidden;
+        }
+
+        #progress-bar {
+            width: 0%;
+            height: 100%;
+            background: #2563eb;
+            color: white;
+            text-align: center;
+            line-height: 30px;
+            transition: width 0.2s;
+        }
+
+        #status {
+            margin-top: 10px;
+            text-align: center;
+            font-weight: bold;
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="container">
+
+    <h1>إضافة هوامش PDF</h1>
+
+    <form id="uploadForm">
+
+        <label>اختر ملف PDF</label>
+        <input type="file" name="pdf" accept=".pdf" required>
+
+        <div class="grid">
+
+            <div>
+                <label>الهامش العلوي (inch)</label>
+                <input type="number" name="top" value="3" min="0" step="0.25">
+            </div>
+
+            <div>
+                <label>الهامش السفلي (inch)</label>
+                <input type="number" name="bottom" value="3" min="0" step="0.25">
+            </div>
+
+            <div>
+                <label>الهامش الأيسر (inch)</label>
+                <input type="number" name="left" value="4" min="0" step="0.25">
+            </div>
+
+            <div>
+                <label>الهامش الأيمن (inch)</label>
+                <input type="number" name="right" value="4" min="0" step="0.25">
+            </div>
+
+        </div>
+
+        <button type="submit">
+            إضافة الهوامش
+        </button>
+
+    </form>
+
+    <div id="progress-container">
+
+        <div id="progress-bg">
+            <div id="progress-bar">0%</div>
+        </div>
+
+        <div id="status">
+            بانتظار البدء...
+        </div>
+
+    </div>
+
+</div>
+
+<script>
+document.getElementById("uploadForm").addEventListener("submit", async (e) => {
+
+    e.preventDefault();
+
+    const formData = new FormData(e.target);
+
+    document.getElementById("status").innerText =
+        "⏳ جاري معالجة الملف...";
+
+    const response = await fetch("/upload", {
+        method: "POST",
+        body: formData
+    });
+
+    if (!response.ok) {
+        document.getElementById("status").innerText =
+            "❌ حدث خطأ";
+        return;
+    }
+
+    const blob = await response.blob();
+
+    const url = URL.createObjectURL(blob);
+
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "pdf_with_margins.pdf";
+    a.click();
+
+    URL.revokeObjectURL(url);
+
+    document.getElementById("status").innerText =
+        "✅ تم إنشاء الملف";
+});
+</script>
+
+</body>
+</html>
