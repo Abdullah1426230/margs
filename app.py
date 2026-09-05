@@ -42,6 +42,8 @@ def process_pdf(
 
     for i, page in enumerate(reader.pages, start=1):
 
+        page.transfer_rotation_to_content()
+
         old_width = float(page.mediabox.width)
         old_height = float(page.mediabox.height)
 
@@ -62,9 +64,9 @@ def process_pdf(
         )
 
         writer.add_page(new_page)
-
-        print(f"Processing {i}/{total_pages}")
-
+        print(
+    f"Page {i} rotation = {page.rotation}"
+)
     with open(output_file, "wb") as f:
         writer.write(f)
 
