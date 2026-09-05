@@ -74,7 +74,7 @@
         #progress-bar {
             width: 0%;
             height: 100%;
-            background: #2563eb;
+            background: #0f8027;
             color: white;
             text-align: center;
             line-height: 30px;
@@ -98,7 +98,7 @@
     <form id="uploadForm">
 
         <label>اختر ملف PDF</label>
-        <input type="file" name="pdf" multiple accept=".pdf" required>
+        <input type="file" name="pdfs" multiple accept=".pdf" required>
 
         <div class="grid">
 
@@ -145,40 +145,86 @@
 </div>
 
 <script>
+
 document.getElementById("uploadForm").addEventListener("submit", async (e) => {
 
     e.preventDefault();
 
-    const formData = new FormData(e.target);
+    document.getElementById("progress-container").style.display = "block";
+
+    document.getElementById("progress-bar").style.width = "0%";
+    document.getElementById("progress-bar").innerText = "0%";
 
     document.getElementById("status").innerText =
-        "⏳ جاري معالجة الملف...";
+        "⏳ جاري رفع الملف...";
+
+    const formData = new FormData(e.target);
 
     const response = await fetch("/upload", {
         method: "POST",
         body: formData
     });
 
-    if (!response.ok) {
+    const result = await response.json();
+
+    if (!result.success) {
+
         document.getElementById("status").innerText =
             "❌ حدث خطأ";
+
         return;
     }
 
-    const blob = await response.blob();
-
-    const url = URL.createObjectURL(blob);
-
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = "pdf_with_margins.pdf";
-    a.click();
-
-    URL.revokeObjectURL(url);
-
     document.getElementById("status").innerText =
-        "✅ تم إنشاء الملف";
+        "⏳ جاري معالجة الملف...";
+
+    const progressInterval = setInterval(async () => {
+
+        try {
+
+            const progressResponse =
+                await fetch("/progress");
+
+            const data =
+                await progressResponse.json();
+
+            document.getElementById("progress-bar").style.width =
+                data.percent + "%";
+
+            document.getElementById("progress-bar").innerText =
+                data.percent + "%";
+
+            document.getElementById("status").innerText =
+                `جاري معالجة الصفحة ${data.current} من ${data.total}`;
+
+            if (data.completed) {
+
+                clearInterval(progressInterval);
+
+                document.getElementById("progress-bar").style.width =
+                    "100%";
+
+                document.getElementById("progress-bar").innerText =
+                    "100%";
+
+                document.getElementById("status").innerText =
+                    "✅ اكتملت المعالجة";
+
+                window.location.href = "/download";
+            }
+
+        } catch (err) {
+            console.error(err);
+        }
+
+    }, 500);
+
 });
+
+window.addEventListener("error", function (e) {
+    console.error(e);
+});
+
 </script>
 <script>
 if ("serviceWorker" in navigator) {
